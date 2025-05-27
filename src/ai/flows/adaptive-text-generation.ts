@@ -60,7 +60,7 @@ Instructions:
 - If the user provided mistakes from the previous text generation, generate new text based on them.
 
 Output:
-Text:`, // Note: Even with this, Genkit expects JSON based on output.schema
+Text:`, 
 });
 
 const adaptiveTextGenerationFlow = ai.defineFlow(
@@ -71,9 +71,6 @@ const adaptiveTextGenerationFlow = ai.defineFlow(
   },
   async input => {
     const {output} = await prompt(input);
-    // 'output' from the prompt is already structured according to AdaptiveTextGenerationOutputSchema
-    // So, it should be { text: "generated string" }
-    // Returning { text: output! } would create { text: { text: "generated string" } }, which is incorrect.
-    return output!; // This directly returns the { text: "generated string" } object.
+    return output!; 
   }
 );

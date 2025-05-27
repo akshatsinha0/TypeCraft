@@ -41,7 +41,7 @@ export default function ResultsModal({
   if (!stats) return null;
 
   const StatItem: React.FC<{ icon: React.ElementType; label: string; value: string | number; unit?: string; className?: string }> = ({ icon: Icon, label, value, unit, className }) => (
-    <div className={`flex items-center justify-between p-3 bg-accent/50 rounded-md ${className}`}>
+    <div className={`flex items-center justify-between p-3 bg-accent/10 rounded-md ${className}`}>
       <div className="flex items-center">
         <Icon className="w-5 h-5 mr-3 text-primary" />
         <span className="text-sm font-medium text-foreground/80">{label}</span>

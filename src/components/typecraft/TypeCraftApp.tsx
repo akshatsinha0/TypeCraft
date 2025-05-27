@@ -47,21 +47,14 @@ export default function TypeCraftApp() {
   const { toast } = useToast();
 
   const calculateStats = useCallback(() => {
-    // Determine elapsed time: if game finished by completing text, use actual time taken.
-    // Otherwise (timer ran out), use the full timeLimit.
     let elapsedSeconds;
     if (isFinished && currentIndex === textToType.length && timeRemaining > 0) {
-      // Finished by typing all text before timer ran out
       elapsedSeconds = timeLimit - timeRemaining;
     } else {
-      // Timer ran out, or game reset before finishing
       elapsedSeconds = timeLimit;
     }
     
-    // Ensure elapsedSeconds is at least 1 to avoid division by zero if no time passed (e.g. instant finish/reset)
-    // Or if timeLimit was 0.
     const durationInMinutes = Math.max(1, elapsedSeconds) / 60;
-
 
     if (typedText.length === 0 && durationInMinutes === 0) {
         return { wpm: 0, accuracy: 0, rawWpm: 0, charsCorrect: 0, charsIncorrect: 0, totalCharsAttempted: 0, mistakesDetail: "" };
@@ -74,7 +67,6 @@ export default function TypeCraftApp() {
       if (i < textToType.length && typedText[i] === textToType[i] && !errors.has(i)) {
         correctChars++;
       } else if (i < textToType.length && errors.has(i)) {
-        // Only count characters that were supposed to be typed as mistakes
         if (textToType[i]) mistakeChars.push(textToType[i]);
       }
     }
@@ -92,7 +84,7 @@ export default function TypeCraftApp() {
       accuracy: Math.max(0, accuracy),
       rawWpm: Math.max(0, rawWpm),
       charsCorrect: correctChars,
-      charsIncorrect: errors.size, // errors.size reflects typed incorrect chars
+      charsIncorrect: errors.size, 
       totalCharsAttempted,
       mistakesDetail: uniqueMistakeChars.join(','),
     };
@@ -101,7 +93,6 @@ export default function TypeCraftApp() {
   const endGame = useCallback(() => {
     setIsTyping(false);
     setIsFinished(true);
-    // Interval is cleared by the timer useEffect's cleanup when isTyping becomes false.
     const finalStats = calculateStats();
     setStats(finalStats);
     if (finalStats.mistakesDetail) {
@@ -109,10 +100,8 @@ export default function TypeCraftApp() {
     } else {
       setPreviousMistakes(undefined);
     }
-  }, [calculateStats]); // endGame depends on calculateStats
+  }, [calculateStats]); 
 
-  // Create a ref for endGame to use in the timer's interval callback.
-  // This ensures the interval always calls the latest version of endGame.
   const endGameRef = useRef(endGame);
   useEffect(() => {
     endGameRef.current = endGame;
@@ -158,17 +147,16 @@ export default function TypeCraftApp() {
     setErrors(new Set());
     setTimeRemaining(timeLimit);
     setStats(null);
-    // Interval is cleared by the timer useEffect's cleanup when isTyping becomes false.
     if (fetchNewText) {
       fetchText();
     } else {
       setIsLoadingText(false);
     }
-  }, [timeLimit, fetchText]); // fetchText is now a dependency
+  }, [timeLimit, fetchText]); 
 
   useEffect(() => {
     resetGame(true);
-  }, [mode, language, skillLevel]); // Removed timeLimit from here as resetGame uses it. fetchText also uses timeLimit.
+  }, [mode, language, skillLevel, resetGame]);
 
   useEffect(() => {
     if (!isTyping && !isFinished) {
@@ -176,20 +164,16 @@ export default function TypeCraftApp() {
     }
   }, [timeLimit, isTyping, isFinished]);
 
-  // Timer logic
   useEffect(() => {
     if (isTyping) {
-      // If starting to type but time is already 0 (e.g. timeLimit was 0 or changed)
       if (timeRemaining <= 0) {
         endGameRef.current();
-        return; // Don't start an interval
+        return; 
       }
 
       timerIntervalRef.current = setInterval(() => {
         setTimeRemaining(prevTime => {
           if (prevTime <= 1) {
-            // endGameRef.current() will set isTyping to false,
-            // which will trigger the cleanup of this useEffect.
             endGameRef.current();
             return 0;
           }
@@ -197,7 +181,6 @@ export default function TypeCraftApp() {
         });
       }, 1000);
 
-      // Cleanup function: This runs when isTyping becomes false, or component unmounts.
       return () => {
         if (timerIntervalRef.current) {
           clearInterval(timerIntervalRef.current);
@@ -205,17 +188,13 @@ export default function TypeCraftApp() {
         }
       };
     } else {
-      // If isTyping is false, ensure any existing interval is cleared.
-      // This handles cases where isTyping becomes false not from within the interval itself
-      // (e.g. reset button).
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
       }
     }
-  }, [isTyping]); // Only depends on isTyping. setTimeRemaining is stable from useState. endGameRef.current provides latest endGame.
-                  // timeRemaining is handled internally by the interval and the initial check.
-
+  }, [isTyping, timeRemaining]); // endGameRef is stable due to useRef
+  
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
       if (isFinished || isLoadingText || !textToType) return;
@@ -231,14 +210,12 @@ export default function TypeCraftApp() {
       }
 
       if (!isTyping && key.length === 1 && currentIndex < textToType.length && timeRemaining <=0) {
-         // If trying to type but time is already up (e.g. after a quick config change to 0s limit)
-         // Do nothing, or perhaps show a message. For now, just don't start.
          return;
       }
 
 
       if (key === 'Backspace') {
-        if (currentIndex > 0 && isTyping) { // Only allow backspace if typing and not at the beginning
+        if (currentIndex > 0 && isTyping) { 
           setCurrentIndex((prev) => prev - 1);
           setTypedText((prev) => prev.slice(0, -1));
           if (errors.has(currentIndex - 1)) {
@@ -257,13 +234,11 @@ export default function TypeCraftApp() {
         setCurrentIndex((prev) => prev + 1);
 
         if (currentIndex + 1 === textToType.length) {
-          // Placed endGameRef.current() call here as per pattern, 
-          // it will set isTyping false and clear interval via useEffect.
           endGameRef.current(); 
         }
       }
     },
-    [isTyping, isFinished, isLoadingText, textToType, currentIndex, errors, timeRemaining] // endGameRef is stable.
+    [isTyping, isFinished, isLoadingText, textToType, currentIndex, errors, timeRemaining] 
   );
   
   useEffect(() => {
@@ -329,8 +304,8 @@ export default function TypeCraftApp() {
         <ResultsModal
           stats={stats}
           isOpen={isFinished}
-          onClose={() => setIsFinished(false)} // Keep game state as finished, just close modal
-          onRestart={handleRestart} // Restart will reset isFinished
+          onClose={() => setIsFinished(false)} 
+          onRestart={handleRestart} 
           timeLimit={timeLimit}
         />
       )}

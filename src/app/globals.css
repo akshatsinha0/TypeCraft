@@ -8,96 +8,97 @@ body {
 
 @layer base {
   :root {
-    --background: 200 50% 97%; /* Very Pale Cyan */
-    --foreground: 215 30% 25%; /* Deep Slate Blue */
+    --background: 220 60% 97%; /* Very Pale Cool Blue */
+    --foreground: 225 40% 20%; /* Deep Indigo */
 
     --card: 0 0% 100%; /* Pure White */
-    --card-foreground: 215 30% 25%;
+    --card-foreground: 225 40% 20%; /* Deep Indigo */
 
     --popover: 0 0% 100%; /* Pure White */
-    --popover-foreground: 215 30% 25%;
+    --popover-foreground: 225 40% 20%; /* Deep Indigo */
 
-    --primary: 205 65% 50%; /* Strong Cerulean Blue */
+    --primary: 210 80% 55%; /* Bright Cerulean Blue */
     --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 210 40% 90%; /* Light Periwinkle */
-    --secondary-foreground: 215 30% 35%; /* Slate Blue */
+    --secondary: 215 50% 92%; /* Light Periwinkle Blue */
+    --secondary-foreground: 220 30% 30%; /* Dark Slate Blue */
 
-    --muted: 210 40% 96%; /* Very Light Periwinkle/Gray */
-    --muted-foreground: 215 20% 55%; /* Muted Slate Blue */
+    --muted: 220 40% 96%; /* Very Light Cool Gray-Blue */
+    --muted-foreground: 220 20% 50%; /* Muted Slate Gray */
 
-    --accent: 180 70% 45%; /* Vibrant Teal */
+    --accent: 190 75% 48%; /* Strong Teal */
     --accent-foreground: 0 0% 100%; /* White */
 
-    --destructive: 0 72% 51%; /* Standard Red */
+    --destructive: 0 75% 55%; /* Vibrant Red */
     --destructive-foreground: 0 0% 98%; /* White */
 
-    --border: 210 30% 85%; /* Soft Blue-Gray border */
-    --input: 210 30% 92%; /* Light Blue-Gray input background */
-    --ring: 205 65% 55%; /* Brighter Cerulean for ring */
+    --border: 215 35% 88%; /* Soft Blue-Gray Border */
+    --input: 215 40% 93%; /* Light Cool Blue Input Background */
+    --ring: 210 85% 60%; /* Brighter Cerulean for Ring */
 
-    --chart-1: 205 65% 50%; /* Use Primary */
-    --chart-2: 180 70% 45%; /* Use Accent */
-    --chart-3: 210 40% 60%; /* A mid-tone from secondary/muted range */
-    --chart-4: 205 65% 70%; /* Lighter primary */
-    --chart-5: 180 70% 65%; /* Lighter accent */
-    --radius: 0.75rem; /* Increased border radius */
+    --chart-1: 210 80% 55%; /* Primary */
+    --chart-2: 190 75% 48%; /* Accent */
+    --chart-3: 215 50% 70%; /* Mid-tone from secondary/muted range */
+    --chart-4: 210 80% 75%; /* Lighter primary */
+    --chart-5: 190 75% 68%; /* Lighter accent */
+    
+    --radius: 0.85rem; /* Slightly increased border radius */
 
     /* Sidebar variables */
-    --sidebar-background: 0 0% 100%; /* Match Card */
-    --sidebar-foreground: 215 30% 25%; /* Match Card Foreground */
-    --sidebar-primary: 205 65% 50%; /* Match Primary */
-    --sidebar-primary-foreground: 0 0% 100%; /* Match Primary Foreground */
-    --sidebar-accent: 180 70% 45%; /* Match Accent */
-    --sidebar-accent-foreground: 0 0% 100%; /* Match Accent Foreground */
-    --sidebar-border: 210 30% 85%; /* Match Border */
-    --sidebar-ring: 205 65% 55%; /* Match Ring */
+    --sidebar-background: 225 30% 15%; /* Dark Indigo/Slate */
+    --sidebar-foreground: 210 50% 95%; /* Light Cool Gray */
+    --sidebar-primary: 210 80% 65%; /* Brighter Primary for Sidebar */
+    --sidebar-primary-foreground: 0 0% 100%; /* White */
+    --sidebar-accent: 190 75% 58%; /* Brighter Accent for Sidebar */
+    --sidebar-accent-foreground: 0 0% 100%; /* White */
+    --sidebar-border: 220 25% 30%; /* Darker Border for Sidebar */
+    --sidebar-ring: 210 85% 70%; /* Brighter Ring for Sidebar */
   }
 
   .dark {
-    --background: 215 30% 12%; /* Very Dark Desaturated Blue */
-    --foreground: 210 40% 95%; /* Off-White / Very Light Cool Gray */
+    --background: 225 30% 12%; /* Very Dark Desaturated Indigo */
+    --foreground: 210 50% 96%; /* Off-White / Very Light Cool Gray */
 
-    --card: 215 30% 18%; /* Dark Slate Blue */
-    --card-foreground: 210 40% 95%;
+    --card: 225 25% 18%; /* Dark Indigo-Slate */
+    --card-foreground: 210 50% 96%; /* Off-White */
 
-    --popover: 215 30% 15%; /* Darker Slate Blue for Popovers */
-    --popover-foreground: 210 40% 95%;
+    --popover: 225 28% 16%; /* Slightly Darker Indigo-Slate for Popovers */
+    --popover-foreground: 210 50% 96%; /* Off-White */
 
-    --primary: 205 70% 60%; /* Brighter Cerulean for dark mode */
+    --primary: 210 75% 65%; /* Brighter Cerulean for Dark Mode */
     --primary-foreground: 0 0% 100%; /* White */
 
-    --secondary: 215 25% 30%; /* Muted Dark Blue */
-    --secondary-foreground: 210 30% 80%; /* Light Gray-Blue */
+    --secondary: 220 20% 30%; /* Muted Dark Blue */
+    --secondary-foreground: 210 40% 85%; /* Light Gray-Blue */
 
-    --muted: 215 25% 22%; /* Darker Muted Blue */
-    --muted-foreground: 210 20% 65%; /* Medium Gray-Blue */
+    --muted: 220 20% 22%; /* Darker Muted Blue */
+    --muted-foreground: 210 25% 70%; /* Medium Gray-Blue */
 
-    --accent: 180 65% 55%; /* Vibrant Teal for dark mode */
+    --accent: 190 70% 58%; /* Vibrant Teal for Dark Mode */
     --accent-foreground: 0 0% 100%; /* White */
 
-    --destructive: 0 65% 55%; /* Vivid Red for dark mode */
+    --destructive: 0 70% 60%; /* Vivid Red for Dark Mode */
     --destructive-foreground: 0 0% 98%; /* White */
 
-    --border: 215 20% 35%; /* Medium Dark Blue-Gray border */
-    --input: 215 20% 28%; /* Dark Blue-Gray input */
-    --ring: 205 70% 60%; /* Brighter Cerulean for ring */
+    --border: 220 20% 38%; /* Medium Dark Blue-Gray Border */
+    --input: 220 22% 28%; /* Dark Blue-Gray Input */
+    --ring: 210 75% 65%; /* Brighter Cerulean Ring for Dark Mode */
     
-    --chart-1: 205 70% 60%; /* Dark Primary */
-    --chart-2: 180 65% 55%; /* Dark Accent */
-    --chart-3: 210 30% 50%; 
-    --chart-4: 205 70% 40%;
-    --chart-5: 180 65% 35%;
+    --chart-1: 210 75% 65%; /* Dark Primary */
+    --chart-2: 190 70% 58%; /* Dark Accent */
+    --chart-3: 215 40% 55%; 
+    --chart-4: 210 75% 45%;
+    --chart-5: 190 70% 40%;
 
     /* Sidebar variables for dark mode */
-    --sidebar-background: 215 30% 18%; /* Match Card */
-    --sidebar-foreground: 210 40% 95%; /* Match Card Foreground */
-    --sidebar-primary: 205 70% 60%; /* Match Primary */
-    --sidebar-primary-foreground: 0 0% 100%; /* Match Primary Foreground */
-    --sidebar-accent: 180 65% 55%; /* Match Accent */
-    --sidebar-accent-foreground: 0 0% 100%; /* Match Accent Foreground */
-    --sidebar-border: 215 20% 35%; /* Match Border */
-    --sidebar-ring: 205 70% 60%; /* Match Ring */
+    --sidebar-background: 225 20% 10%; /* Even Darker Indigo for Sidebar Dark */
+    --sidebar-foreground: 210 60% 97%; /* Very Light Gray for Sidebar Dark */
+    --sidebar-primary: 210 75% 70%; /* Primary for Sidebar Dark */
+    --sidebar-primary-foreground: 0 0% 100%; /* White */
+    --sidebar-accent: 190 70% 63%; /* Accent for Sidebar Dark */
+    --sidebar-accent-foreground: 0 0% 100%; /* White */
+    --sidebar-border: 220 15% 25%; /* Darker Border for Sidebar Dark */
+    --sidebar-ring: 210 75% 70%; /* Ring for Sidebar Dark */
   }
 }
 
