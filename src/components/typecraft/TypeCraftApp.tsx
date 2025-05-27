@@ -91,8 +91,14 @@ export default function TypeCraftApp() {
   }, [typedText, textToType, errors, timeLimit, timeRemaining, isFinished, currentIndex]);
 
   const endGame = useCallback(() => {
+    // If game is already marked as finished, don't do anything.
+    // This uses the 'isFinished' state from when this specific 'endGame' callback was created.
+    if (isFinished) {
+      return;
+    }
+
     setIsTyping(false);
-    setIsFinished(true);
+    setIsFinished(true); // Mark as finished
     const finalStats = calculateStats();
     setStats(finalStats);
     if (finalStats.mistakesDetail) {
@@ -100,7 +106,7 @@ export default function TypeCraftApp() {
     } else {
       setPreviousMistakes(undefined);
     }
-  }, [calculateStats]); 
+  }, [calculateStats, isFinished]); // Added isFinished dependency
 
   const endGameRef = useRef(endGame);
   useEffect(() => {
@@ -156,7 +162,7 @@ export default function TypeCraftApp() {
 
   useEffect(() => {
     resetGame(true);
-  }, [mode, language, skillLevel, resetGame]);
+  }, [mode, language, skillLevel, resetGame]); // resetGame is now a dependency
 
   useEffect(() => {
     if (!isTyping && !isFinished) {
@@ -165,35 +171,39 @@ export default function TypeCraftApp() {
   }, [timeLimit, isTyping, isFinished]);
 
   useEffect(() => {
-    if (isTyping) {
-      if (timeRemaining <= 0) { 
-        endGameRef.current();
-        return; 
-      }
-
-      timerIntervalRef.current = setInterval(() => {
-        setTimeRemaining(prevTime => {
-          if (prevTime <= 1) { 
-            if(timerIntervalRef.current) clearInterval(timerIntervalRef.current); 
-            endGameRef.current();
-            return 0;
-          }
-          return prevTime - 1;
-        });
-      }, 1000);
-
-      return () => {
-        if (timerIntervalRef.current) {
-          clearInterval(timerIntervalRef.current);
-          timerIntervalRef.current = null;
-        }
-      };
-    } else {
+    if (!isTyping) {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
       }
+      return;
     }
+
+    if (timeRemaining <= 0) {
+      endGameRef.current();
+      return;
+    }
+
+    timerIntervalRef.current = setInterval(() => {
+      setTimeRemaining(prevTime => {
+        if (prevTime <= 1) {
+          if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+          }
+          endGameRef.current();
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
+      }
+    };
   }, [isTyping]); 
   
   const handleKeyDown = useCallback(
@@ -313,6 +323,5 @@ export default function TypeCraftApp() {
     </div>
   );
 }
-
 
 // AppPrototyperTouchedV3
