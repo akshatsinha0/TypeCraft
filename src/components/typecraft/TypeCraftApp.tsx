@@ -166,14 +166,15 @@ export default function TypeCraftApp() {
 
   useEffect(() => {
     if (isTyping) {
-      if (timeRemaining <= 0) {
+      if (timeRemaining <= 0) { // Check if time is already 0 before starting interval
         endGameRef.current();
         return; 
       }
 
       timerIntervalRef.current = setInterval(() => {
         setTimeRemaining(prevTime => {
-          if (prevTime <= 1) {
+          if (prevTime <= 1) { // If time will be 0 or less after decrementing
+            if(timerIntervalRef.current) clearInterval(timerIntervalRef.current); // Clear interval immediately
             endGameRef.current();
             return 0;
           }
@@ -193,7 +194,7 @@ export default function TypeCraftApp() {
         timerIntervalRef.current = null;
       }
     }
-  }, [isTyping, timeRemaining]); // endGameRef is stable due to useRef
+  }, [isTyping]); // Removed timeRemaining from dependencies, endGameRef is stable
   
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
@@ -313,3 +314,5 @@ export default function TypeCraftApp() {
   );
 }
 
+
+// AppPrototyperTouchedV2
