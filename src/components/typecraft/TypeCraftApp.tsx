@@ -45,9 +45,11 @@ export default function TypeCraftApp() {
 
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const { toast } = useToast();
+  const gameProcessedRef = useRef<boolean>(false); // To ensure endGame logic runs once
 
   const calculateStats = useCallback(() => {
     let elapsedSeconds;
+    // Use isFinished state directly for calculation logic
     if (isFinished && currentIndex === textToType.length && timeRemaining > 0) {
       elapsedSeconds = timeLimit - timeRemaining;
     } else {
@@ -90,29 +92,6 @@ export default function TypeCraftApp() {
     };
   }, [typedText, textToType, errors, timeLimit, timeRemaining, isFinished, currentIndex]);
 
-  const endGame = useCallback(() => {
-    // If game is already marked as finished, don't do anything.
-    // This uses the 'isFinished' state from when this specific 'endGame' callback was created.
-    if (isFinished) {
-      return;
-    }
-
-    setIsTyping(false);
-    setIsFinished(true); // Mark as finished
-    const finalStats = calculateStats();
-    setStats(finalStats);
-    if (finalStats.mistakesDetail) {
-      setPreviousMistakes(finalStats.mistakesDetail);
-    } else {
-      setPreviousMistakes(undefined);
-    }
-  }, [calculateStats, isFinished]); // Added isFinished dependency
-
-  const endGameRef = useRef(endGame);
-  useEffect(() => {
-    endGameRef.current = endGame;
-  }, [endGame]);
-
 
   const fetchText = useCallback(async () => {
     setIsLoadingText(true);
@@ -121,7 +100,7 @@ export default function TypeCraftApp() {
         mode,
         skillLevel,
         ...(mode === 'code' && { language }),
-        ...(previousMistakes && { previousMistakes }),
+        ...(previousMistakes && { previousMistakes }), // Uses current previousMistakes state
       };
       const result = await generateAdaptiveText(input);
       if (result.text && result.text.trim() !== "") {
@@ -135,41 +114,51 @@ export default function TypeCraftApp() {
       setTextToType("Error fetching text. This is a sample text for practice.");
       toast({ title: "Error", description: "Failed to fetch text. Please try again.", variant: "destructive" });
     } finally {
-      setIsLoadingText(false);
+      // Reset only states directly related to the new text snippet
       setTypedText('');
       setCurrentIndex(0);
       setErrors(new Set());
-      setTimeRemaining(timeLimit); 
-      setIsTyping(false); 
-      setIsFinished(false);
+      setIsLoadingText(false);
+      // DO NOT change isFinished, stats, or isTyping here.
     }
-  }, [mode, language, skillLevel, timeLimit, previousMistakes, toast]);
+  }, [mode, language, skillLevel, timeLimit, previousMistakes, toast]); // previousMistakes is a dependency.
 
-  const resetGame = useCallback((fetchNewText = true) => {
+  const endGame = useCallback(() => {
+    if (gameProcessedRef.current) return; // Prevent multiple executions
+    gameProcessedRef.current = true;
+
+    setIsTyping(false);
+    setIsFinished(true); // Set game as finished
+    const finalStats = calculateStats();
+    setStats(finalStats);
+    if (finalStats.mistakesDetail) {
+      setPreviousMistakes(finalStats.mistakesDetail);
+    } else {
+      setPreviousMistakes(undefined);
+    }
+    // DO NOT fetch new text here. Modal should show.
+  }, [calculateStats]); // calculateStats is the main dependency here.
+
+  const endGameRef = useRef(endGame);
+  useEffect(() => {
+    endGameRef.current = endGame;
+  }, [endGame]);
+
+  // Effect for when user changes configuration settings OR for initial load
+  useEffect(() => {
+    gameProcessedRef.current = false; // Reset for new game session
     setIsTyping(false);
     setIsFinished(false);
-    setTypedText('');
-    setCurrentIndex(0);
-    setErrors(new Set());
-    setTimeRemaining(timeLimit);
     setStats(null);
-    if (fetchNewText) {
-      fetchText();
-    } else {
-      setIsLoadingText(false);
-    }
-  }, [timeLimit, fetchText]); 
+    setPreviousMistakes(undefined); // Clear previous mistakes for a new configuration
+    setTimeRemaining(timeLimit);
+    // Fetch text will be triggered by the change in previousMistakes if fetchText is a dependency of another effect.
+    // Or, call it directly. Let's call it directly for clarity.
+    // This fetchText call will use `previousMistakes: undefined`.
+    fetchText();
+  }, [mode, language, skillLevel, timeLimit]); // fetchText is NOT a dependency here to avoid loops.
 
-  useEffect(() => {
-    resetGame(true);
-  }, [mode, language, skillLevel, resetGame]); // resetGame is now a dependency
-
-  useEffect(() => {
-    if (!isTyping && !isFinished) {
-      setTimeRemaining(timeLimit);
-    }
-  }, [timeLimit, isTyping, isFinished]);
-
+  // This effect handles the timer countdown
   useEffect(() => {
     if (!isTyping) {
       if (timerIntervalRef.current) {
@@ -179,10 +168,21 @@ export default function TypeCraftApp() {
       return;
     }
 
-    if (timeRemaining <= 0) {
+    // If time runs out and the game hasn't been processed as finished yet
+    if (timeRemaining <= 0 && !gameProcessedRef.current) {
       endGameRef.current();
-      return;
+      return; // Stop the timer interval logic
     }
+    
+    // If already finished, clear interval
+    if (isFinished || gameProcessedRef.current) {
+        if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+        }
+        return;
+    }
+
 
     timerIntervalRef.current = setInterval(() => {
       setTimeRemaining(prevTime => {
@@ -191,7 +191,10 @@ export default function TypeCraftApp() {
             clearInterval(timerIntervalRef.current);
             timerIntervalRef.current = null;
           }
-          endGameRef.current();
+          // Check gameProcessedRef before calling endGame to prevent double execution from here and the effect above
+          if (!gameProcessedRef.current) { 
+            endGameRef.current();
+          }
           return 0;
         }
         return prevTime - 1;
@@ -204,11 +207,18 @@ export default function TypeCraftApp() {
         timerIntervalRef.current = null;
       }
     };
-  }, [isTyping]); 
+  }, [isTyping, timeRemaining, isFinished]); // isFinished is added to re-evaluate if timer should run
+
+  // Effect to set initial time remaining when timeLimit changes AND game is not active
+  useEffect(() => {
+    if (!isTyping && !isFinished) {
+      setTimeRemaining(timeLimit);
+    }
+  }, [timeLimit, isTyping, isFinished]);
   
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      if (isFinished || isLoadingText || !textToType) return;
+      if (isFinished || gameProcessedRef.current || isLoadingText || !textToType) return;
 
       const { key } = event;
 
@@ -223,7 +233,6 @@ export default function TypeCraftApp() {
       if (!isTyping && key.length === 1 && currentIndex < textToType.length && timeRemaining <=0) {
          return;
       }
-
 
       if (key === 'Backspace') {
         if (currentIndex > 0 && isTyping) { 
@@ -245,7 +254,10 @@ export default function TypeCraftApp() {
         setCurrentIndex((prev) => prev + 1);
 
         if (currentIndex + 1 === textToType.length) {
-          endGameRef.current(); 
+          // Check gameProcessedRef before calling endGame
+          if (!gameProcessedRef.current) {
+            endGameRef.current(); 
+          }
         }
       }
     },
@@ -259,9 +271,16 @@ export default function TypeCraftApp() {
     };
   }, [handleKeyDown]);
 
-
   const handleRestart = () => {
-    resetGame(true); 
+    gameProcessedRef.current = false; // Reset for new game session
+    setIsTyping(false);
+    setIsFinished(false);
+    setStats(null);
+    setTimeRemaining(timeLimit);
+    // previousMistakes state is preserved from the last game for adaptive text.
+    // If you want to clear mistakes on every restart, uncomment next line:
+    // setPreviousMistakes(undefined); 
+    fetchText(); 
   };
 
   return (
@@ -290,7 +309,7 @@ export default function TypeCraftApp() {
       
       <TimerDisplay timeRemaining={timeRemaining} />
 
-      {isLoadingText && !textToType ? (
+      {isLoadingText && !textToType && !isFinished ? ( // Don't show skeleton if results are showing
          <div className="w-full max-w-2xl p-6 bg-card rounded-lg shadow-lg space-y-2">
             <Skeleton className="h-6 w-3/4" />
             <Skeleton className="h-6 w-full" />
@@ -302,7 +321,7 @@ export default function TypeCraftApp() {
           typedText={typedText}
           currentIndex={currentIndex}
           errors={errors}
-          isLoading={isLoadingText}
+          isLoading={isLoadingText && !isFinished} // Only show loading text if not finished
         />
       )}
 
@@ -315,7 +334,10 @@ export default function TypeCraftApp() {
         <ResultsModal
           stats={stats}
           isOpen={isFinished}
-          onClose={() => setIsFinished(false)} 
+          onClose={() => {
+            setIsFinished(false);
+            gameProcessedRef.current = false; // Allow new game if modal is closed manually
+          }} 
           onRestart={handleRestart} 
           timeLimit={timeLimit}
         />
